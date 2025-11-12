@@ -30,7 +30,10 @@ export default function Orders() {
   const { user } = useAuth();
   const [selectedOrderId, setSelectedOrderId] = useState<string>();
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
-  const [productRatingLoading, setProductRatingLoading] = useState<string>("");
+  const [productRatingLoading, setProductRatingLoading] = useState<{
+    orderID: string,
+    productId: string
+  }>({ orderID: "", productId: "" });
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -203,7 +206,10 @@ export default function Orders() {
       return;
     }
 
-    setProductRatingLoading(productId);
+    setProductRatingLoading({
+      productId: productId,
+      orderID: orderNumber
+    });
 
     try {
       // Show optimistic UI update
@@ -241,7 +247,7 @@ export default function Orders() {
 
       toast.error(`Failed to rate "${productName}". Please try again.`);
     } finally {
-      setProductRatingLoading("");
+      setProductRatingLoading({ orderID: "", productId: "" });
     }
   };
 
@@ -564,7 +570,7 @@ export default function Orders() {
                                     rating={userRating || 0}
                                     readonly={!!userRating}
                                     disabled={
-                                      productRatingLoading === item.productId
+                                      productRatingLoading.productId === item.productId && order.orderNumber === productRatingLoading.orderID
                                     }
                                     size="sm"
                                     showCount={false}
@@ -581,7 +587,7 @@ export default function Orders() {
                                         : undefined
                                     }
                                   />
-                                  {productRatingLoading === item.productId && (
+                                  {productRatingLoading.productId === item.productId && order.orderNumber === productRatingLoading.orderID && (
                                     <div className="flex items-center mt-1">
                                       <Loader2 className="w-3 h-3 animate-spin mr-1" />
                                       <span className="text-xs text-muted-foreground">
